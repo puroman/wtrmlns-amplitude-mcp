@@ -8,6 +8,7 @@
 export interface AmplitudeCredentials {
   apiKey: string;
   secretKey: string;
+  region?: 'us' | 'eu';
 }
 
 /**
