@@ -12,25 +12,31 @@ const argv = yargs(hideBin(process.argv))
     type: "string",
     description: "Amplitude secret key"
   })
+  .option("amplitude-region", {
+    type: "string",
+    choices: ["us", "eu"],
+    description: "Amplitude data region (us or eu)"
+  })
+  .option("project-dir", {
+    type: "string",
+    description: "Path to project-specific prompts and examples directory"
+  })
   .help()
   .argv;
 
-/**
- * Get Amplitude API credentials from command line arguments or environment
- * Priority: command line args > environment variables
- * @returns Amplitude credentials object
- */
 export const getAmplitudeCredentials = (): AmplitudeCredentials => {
-  // Try command line args first, fall back to environment variables
   const apiKey = (argv["amplitude-api-key"] as string) || process.env.AMPLITUDE_API_KEY || "";
   const secretKey = (argv["amplitude-secret-key"] as string) || process.env.AMPLITUDE_SECRET_KEY || "";
-  
+
   if (!apiKey || !secretKey) {
     console.error("Warning: Amplitude API credentials not provided via --amplitude-api-key/--amplitude-secret-key or AMPLITUDE_API_KEY/AMPLITUDE_SECRET_KEY environment variables");
   }
-  
-  // Get region from environment variable (defaults to 'us')
-  const region = (process.env.AMPLITUDE_REGION as 'us' | 'eu' | undefined) || 'us';
-  
+
+  const region = (argv["amplitude-region"] as 'us' | 'eu') || (process.env.AMPLITUDE_REGION as 'us' | 'eu') || 'us';
+
   return { apiKey, secretKey, region };
+};
+
+export const getProjectDir = (): string | undefined => {
+  return (argv["project-dir"] as string) || process.env.AMPLITUDE_PROJECT_DIR || undefined;
 };

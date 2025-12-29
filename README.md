@@ -1,14 +1,15 @@
 # Amplitude MCP Server
 
-A Model Context Protocol (MCP) server for Amplitude Analytics API, providing tools and resources for querying and segmenting event data.
+A Model Context Protocol (MCP) server for Amplitude Analytics API, providing tools, resources, and prompts for querying event data, analyzing funnels, retention, and user behavior.
 
 ## Overview
 
-This MCP server enables AI assistants and other MCP clients to interact with the Amplitude Analytics API, allowing them to:
+This MCP server enables AI assistants and other MCP clients to interact with the Amplitude Dashboard REST API, allowing them to:
 
-- Query event data with filters
-- Perform advanced segmentation with breakdowns
-- Access event data through structured resources
+- Query event data with filters and segmentation
+- Analyze conversion funnels
+- Track user retention
+- Use pre-built prompts for common analytics tasks
 
 ## Installation
 
@@ -28,110 +29,100 @@ This MCP server enables AI assistants and other MCP clients to interact with the
 }
 ```
 
-### Required Credentials
+### CLI Options
 
-Amplitude API credentials must be provided using command line arguments:
-
-- `--amplitude-api-key`: Your Amplitude API key (required)
-- `--amplitude-secret-key`: Your Amplitude secret key (required)
+| Option | Description |
+|--------|-------------|
+| `--amplitude-api-key` | Amplitude API key (required) |
+| `--amplitude-secret-key` | Amplitude secret key (required) |
+| `--amplitude-region` | Data region: `us` or `eu` (default: `us`) |
+| `--project-dir` | Path to project-specific prompts directory |
 
 ## Available Tools
 
-### 1. query_events
+### Discovery Tools (Use First!)
 
-Basic event querying with filters.
+#### list_events
+**List all event types tracked in Amplitude.** Use this first to discover available events before querying. Returns event names, descriptions, and categories.
 
-**Parameters:**
+#### list_event_properties
+List properties available for a specific event type. Use this to understand what filters and breakdowns are available.
 
-- `events` (array): Array of events to query
-  - `eventType` (string): Type of event
-  - `propertyFilters` (array, optional): Filters for event properties
-- `start` (string): Start date in YYYYMMDD format
-- `end` (string): End date in YYYYMMDD format
-- `interval` (string, optional): Grouping interval (day, week, month)
-- `groupBy` (string, optional): Grouping dimension
+#### list_user_properties
+List all user properties tracked in Amplitude. Useful for understanding available segmentation options.
 
-**Example:**
+### Query Tools
 
-```json
-{
-  "events": [
-    {
-      "eventType": "user_login",
-      "propertyFilters": [
-        {
-          "propertyName": "device_type",
-          "value": "mobile",
-          "op": "is"
-        }
-      ]
-    }
-  ],
-  "start": "2023-01-01",
-  "end": "2023-01-31",
-  "interval": "day"
-}
-```
+#### query_events
+Query Amplitude event counts over a date range.
 
-### 2. segment_events
+#### segment_events
+Query events with advanced segmentation and breakdowns by properties.
 
-Advanced event segmentation with breakdowns.
+#### analyze_funnel
+Analyze conversion through a sequence of events (funnel). Shows how users progress through steps and where they drop off.
 
 **Parameters:**
+- `events`: Ordered sequence of events in the funnel (2-10 events)
+- `start`, `end`: Date range in YYYYMMDD format
+- `mode`: `this order`, `any order`, or `exact order`
+- `segment`: Optional user segment filter
+- `groupBy`: Optional property to group results by
 
-- All parameters from `query_events`
-- `filters` (array, optional): Additional filters for segmentation
-  - `type` (string): Filter type (property, event, user)
-  - `propertyName` (string, optional): Name of the property
-  - `value` (mixed, optional): Value to filter by
-  - `op` (string, optional): Operator for comparison
-- `breakdowns` (array, optional): Breakdown dimensions
-  - `type` (string): Breakdown type (event, user)
-  - `propertyName` (string): Name of the property to break down by
+#### analyze_retention
+Analyze user retention between a starting event and return event.
 
-**Example:**
+**Parameters:**
+- `startEvent`: Event that starts retention window
+- `returnEvent`: Event that indicates user returned
+- `start`, `end`: Date range
+- `retentionType`: `bracket` or `rolling`
 
-```json
-{
-  "events": [
-    {
-      "eventType": "purchase"
-    }
-  ],
-  "start": "2023-01-01",
-  "end": "2023-01-31",
-  "interval": "week",
-  "filters": [
-    {
-      "type": "user",
-      "propertyName": "country",
-      "value": "US",
-      "op": "is"
-    }
-  ],
-  "breakdowns": [
-    {
-      "type": "user",
-      "propertyName": "device_type"
-    }
-  ]
-}
-```
+## Available Prompts
+
+The server includes built-in prompts for common analytics tasks:
+
+| Prompt | Description |
+|--------|-------------|
+| `conversion_funnel` | Analyze conversion rates through a sequence of events |
+| `engagement_report` | Generate a comprehensive engagement report |
+| `retention_analysis` | Analyze user retention between events |
 
 ## Available Resources
 
 ### amplitude_events
+Access event data with resource listing capability.
 
-Access event data for a specific event type and date range.
+**URI Format:** `amplitude://events/{eventType}/{start}/{end}`
 
-**URI Format:**
+## Project-Specific Prompts
+
+You can add project-specific prompts by creating a `projects/` directory with JSON prompt files:
+
 ```
-amplitude://events/{eventType}/{start}/{end}
+projects/
+└── my-project/
+    └── prompts/
+        └── custom-funnel.json
 ```
 
-**Example:**
-```
-amplitude://events/user_login/2023-01-01/2023-01-31
+Load with: `--project-dir=./projects/my-project`
+
+### Prompt JSON Format
+
+```json
+{
+  "name": "my_custom_prompt",
+  "description": "Description for the prompt",
+  "template": "The prompt template with {placeholder} values",
+  "arguments": [
+    {
+      "name": "placeholder",
+      "description": "Description of the argument",
+      "required": true
+    }
+  ]
+}
 ```
 
 ## Development
@@ -141,20 +132,31 @@ amplitude://events/user_login/2023-01-01/2023-01-31
 ```
 amplitude-mcp/
 ├── src/
-│   ├── index.ts                  # Main entry point with MCP server setup
-│   ├── services/
-│   │   └── amplitude.service.ts  # Amplitude API service implementation
-│   ├── resources/
-│   │   └── events.ts             # Event data resources
-│   ├── types/
-│   │   └── amplitude.ts          # Amplitude API types
-│   └── utils/
-│       └── config.ts             # Configuration and credential handling
-├── bin/
-│   └── cli.js                    # CLI entry point
-├── dist/                         # Compiled JavaScript files
-├── package.json
-└── tsconfig.json
+│   ├── index.ts              # Server setup
+│   ├── tools/                # Tool implementations
+│   │   ├── taxonomy.ts       # Event discovery (list_events, etc.)
+│   │   ├── event-segmentation.ts
+│   │   ├── funnel-analysis.ts
+│   │   └── retention.ts
+│   ├── prompts/              # Generic prompts
+│   ├── resources/            # Resource handlers
+│   ├── services/             # Amplitude API service
+│   └── types/                # TypeScript types
+├── projects/                 # Project-specific (gitignored)
+├── bin/cli.js
+└── package.json
+```
+
+### Building
+
+```bash
+npm run build
+```
+
+### Testing with Inspector
+
+```bash
+npm run inspect
 ```
 
 ## License

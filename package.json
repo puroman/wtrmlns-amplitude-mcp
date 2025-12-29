@@ -1,7 +1,7 @@
 {
   "name": "amplitude-mcp",
-  "version": "0.0.2",
-  "description": "Model Context Protocol server for Amplitude",
+  "version": "0.1.0",
+  "description": "Model Context Protocol server for Amplitude Analytics",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
