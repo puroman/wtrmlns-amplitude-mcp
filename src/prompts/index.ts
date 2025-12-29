@@ -60,39 +60,6 @@ Steps:
     }
   );
 
-  // Prompt: Conversion funnel analysis
-  server.prompt(
-    "conversion_funnel",
-    "Analyze conversion rates through a sequence of events",
-    {
-      start_event: z.string().describe("The starting event of the funnel (e.g., 'page_viewed')"),
-      end_event: z.string().describe("The goal/conversion event (e.g., 'purchase_completed')"),
-      time_range: z.enum(['last_7_days', 'last_30_days', 'last_90_days']).default('last_30_days').describe("Time range")
-    },
-    async ({ start_event, end_event, time_range }) => {
-      const { start, end, description } = formatDateRange(time_range);
-      return {
-        messages: [{
-          role: "user",
-          content: {
-            type: "text",
-            text: `Analyze the conversion funnel from "${start_event}" to "${end_event}" over the ${description}.
-
-Use the analyze_funnel tool with:
-- events: [{ eventType: "${start_event}" }, { eventType: "${end_event}" }]
-- start: "${start}"
-- end: "${end}"
-
-Then analyze:
-1. Overall conversion rate
-2. Drop-off between steps
-3. Suggestions for improving conversion`
-          }
-        }]
-      };
-    }
-  );
-
   // Prompt: Engagement report
   server.prompt(
     "engagement_report",
@@ -132,40 +99,6 @@ Steps:
     }
   );
 
-  // Prompt: Retention analysis
-  server.prompt(
-    "retention_analysis",
-    "Analyze user retention between two events",
-    {
-      start_event: z.string().describe("Event that defines user acquisition (e.g., 'sign_up')"),
-      return_event: z.string().describe("Event that indicates user return (e.g., 'page_viewed')"),
-      time_range: z.enum(['last_30_days', 'last_90_days']).default('last_30_days').describe("Time range")
-    },
-    async ({ start_event, return_event, time_range }) => {
-      const { start, end, description } = formatDateRange(time_range);
-      return {
-        messages: [{
-          role: "user",
-          content: {
-            type: "text",
-            text: `Analyze user retention from "${start_event}" to "${return_event}" over the ${description}.
-
-Use the analyze_retention tool with:
-- startEvent: { eventType: "${start_event}" }
-- returnEvent: { eventType: "${return_event}" }
-- start: "${start}"
-- end: "${end}"
-
-Analyze:
-1. Day 1, Day 7, Day 30 retention rates
-2. Retention curve shape
-3. Comparison to industry benchmarks
-4. Recommendations for improving retention`
-          }
-        }]
-      };
-    }
-  );
 }
 
 // Interface for project-specific prompts loaded from JSON

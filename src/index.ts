@@ -11,7 +11,11 @@ import { getProjectDir } from "./utils/config.js";
 // Load .env file from project root
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const projectRoot = resolve(__dirname, "..", "..");
+// When running from dist/index.js, go up one level to project root
+// When running from src/index.ts (dev), go up two levels
+const projectRoot = __dirname.includes('/dist/') 
+  ? resolve(__dirname, "..")
+  : resolve(__dirname, "..", "..");
 config({ path: resolve(projectRoot, ".env") });
 
 // Create MCP server

@@ -29,7 +29,11 @@ export const getAmplitudeCredentials = (): AmplitudeCredentials => {
   const secretKey = (argv["amplitude-secret-key"] as string) || process.env.AMPLITUDE_SECRET_KEY || "";
 
   if (!apiKey || !secretKey) {
-    console.error("Warning: Amplitude API credentials not provided via --amplitude-api-key/--amplitude-secret-key or AMPLITUDE_API_KEY/AMPLITUDE_SECRET_KEY environment variables");
+    const errorMsg = "Error: Amplitude API credentials not provided via --amplitude-api-key/--amplitude-secret-key or AMPLITUDE_API_KEY/AMPLITUDE_SECRET_KEY environment variables";
+    console.error(errorMsg);
+    console.error(`API Key present: ${!!apiKey}, Secret Key present: ${!!secretKey}`);
+    console.error(`Environment variables: AMPLITUDE_API_KEY=${process.env.AMPLITUDE_API_KEY ? 'SET' : 'NOT SET'}, AMPLITUDE_SECRET_KEY=${process.env.AMPLITUDE_SECRET_KEY ? 'SET' : 'NOT SET'}`);
+    throw new Error(errorMsg);
   }
 
   const region = (argv["amplitude-region"] as 'us' | 'eu') || (process.env.AMPLITUDE_REGION as 'us' | 'eu') || 'us';
