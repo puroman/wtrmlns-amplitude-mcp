@@ -1,9 +1,18 @@
+import { config } from "dotenv";
+import { fileURLToPath } from "url";
+import { dirname, resolve } from "path";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { registerAllTools } from "./tools/index.js";
 import { registerResources } from "./resources/index.js";
 import { registerPrompts, loadProjectPrompts } from "./prompts/index.js";
 import { getProjectDir } from "./utils/config.js";
+
+// Load .env file from project root
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const projectRoot = resolve(__dirname, "..", "..");
+config({ path: resolve(projectRoot, ".env") });
 
 // Create MCP server
 export const server = new McpServer({
