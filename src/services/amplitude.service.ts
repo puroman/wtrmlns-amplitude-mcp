@@ -37,7 +37,6 @@ export class AmplitudeService {
     const url = new URL(`${baseUrl}/events/segmentation`);
     
     // Build event object according to Dashboard REST API format
-    // The 'e' parameter is a JSON string representing the event
     interface DashboardEvent {
       event_type: string;
       filters?: Array<{
@@ -46,34 +45,29 @@ export class AmplitudeService {
         subprop_op: string;
         subprop_value: Array<string | number | boolean>;
       }>;
-      group_by?: Array<{
-        type: string;
-        value: string;
-      }>;
+      group_by?: Array<{ type: string; value: string }>;
     }
     
     const eventObj: DashboardEvent = {
       event_type: params.events[0].eventType,
     };
     
-    // Add filters if present (convert to Dashboard API format)
-    if (params.events[0].propertyFilters && params.events[0].propertyFilters.length > 0) {
+    // Add filters if present
+    if (params.events[0].propertyFilters?.length) {
       eventObj.filters = params.events[0].propertyFilters.map((filter) => ({
-        subprop_type: 'event', // Default to event property, could be enhanced
+        subprop_type: 'event',
         subprop_key: filter.propertyName,
         subprop_op: filter.op,
         subprop_value: Array.isArray(filter.value) ? filter.value : [filter.value],
       }));
     }
     
-    // Add group_by if present (only for valid event/user properties, not "eventType")
-    // Note: "eventType" is not a valid property for group_by - it's used to discover events
-    // If groupBy is "eventType", we should query without group_by to get all events
-    if (params.groupBy && params.groupBy !== 'eventType') {
-      eventObj.group_by = [{
-        type: 'event', // Default to event property, could be enhanced to detect user properties
-        value: params.groupBy,
-      }];
+    // Add breakdowns if present (group_by in Amplitude API)
+    if (params.breakdowns?.length) {
+      eventObj.group_by = params.breakdowns.map((b) => ({
+        type: b.type,
+        value: b.propertyName,
+      }));
     }
     
     // Set query parameters according to Dashboard REST API format
