@@ -1,5 +1,5 @@
 {
-  "name": "amplitude-mcp",
+  "name": "wtrmlns-amplitude-mcp",
   "version": "0.1.0",
   "description": "Model Context Protocol server for Amplitude Analytics",
   "type": "module",

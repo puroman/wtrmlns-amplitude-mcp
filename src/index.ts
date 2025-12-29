@@ -7,7 +7,7 @@ import { getProjectDir } from "./utils/config.js";
 
 // Create MCP server
 export const server = new McpServer({
-  name: "amplitude-mcp",
+  name: "wtrmlns-amplitude-mcp",
   version: "0.1.0",
   description: "MCP server for Amplitude Analytics API"
 });
